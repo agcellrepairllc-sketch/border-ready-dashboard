@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://agcellrepairllc-sketch.github.io/border-ready-dashboard/sitemap.xml
