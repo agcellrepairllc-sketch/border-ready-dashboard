@@ -85,6 +85,31 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
 
   let weatherData = null, bridgeData = null;
 
+  async function fetchFX() {
+    try {
+      const r = await fetch('https://open.er-api.com/v6/latest/USD').then(r => r.json());
+      const mxn = r.rates.MXN;
+      if (!mxn) return;
+      const el = document.getElementById('fx-container');
+      el.innerHTML = `<div class="fx-card">
+        <div>
+          <div class="fx-title">💱 ${lang === 'es' ? 'Tipo de Cambio' : 'Exchange Rate'}</div>
+          <div class="fx-rates">
+            <div class="fx-rate">
+              <div class="fx-label">1 USD</div>
+              <div class="fx-value">${mxn.toFixed(2)}<span class="fx-unit"> MXN</span></div>
+            </div>
+            <div class="fx-rate">
+              <div class="fx-label">1 MXN</div>
+              <div class="fx-value">${(1/mxn).toFixed(4)}<span class="fx-unit"> USD</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="fx-source">open.er-api.com<br>${lang === 'es' ? 'Actualizado hoy' : 'Updated today'}</div>
+      </div>`;
+    } catch(e) { console.error('FX error:', e); }
+  }
+
   async function fetchAll() {
     try {
       const [wx, br] = await Promise.all([
@@ -246,5 +271,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
   }
 
   updateText();
+  fetchFX();
   fetchAll();
   setInterval(fetchAll, 5 * 60 * 1000);
+  setInterval(fetchFX, 60 * 60 * 1000);
