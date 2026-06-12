@@ -87,7 +87,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
 
   async function fetchFX() {
     try {
-      const r = await fetch('https://open.er-api.com/v6/latest/USD').then(r => r.json());
+      const r = await fetch('https://v6.exchangerate-api.com/v6/7b06deec245c4dd4f5f5f147/latest/USD').then(r => r.json());
       const mxn = r.rates.MXN;
       if (!mxn) return;
       const el = document.getElementById('fx-container');
@@ -105,7 +105,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
             </div>
           </div>
         </div>
-        <div class="fx-source">open.er-api.com<br>${lang === 'es' ? 'Actualizado hoy' : 'Updated today'}</div>
+        <div class="fx-source">exchangerate-api.com<br>${lang === 'es' ? 'Actualizado hoy' : 'Updated today'}</div>
       </div>`;
     } catch(e) { console.error('FX error:', e); }
   }
