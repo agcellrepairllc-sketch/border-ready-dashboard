@@ -259,7 +259,6 @@
     <div class="section-title" id="label-usamx">USA → Mexico</div>
     <div class="section-dir" id="label-southbound">Southbound</div>
   </div>
-
   <div id="southbound-section">
     <div class="sb-locked" style="height:120px;">
       <div class="southbound-card" style="opacity:0.3;">
@@ -267,27 +266,27 @@
         <div class="sb-status sb-heavy">Heavy</div>
         <div><div class="sb-mins">—</div></div>
       </div>
-      <div class="sb-locked-overlay" id="sb-lock-msg">🔒 Unlock to see southbound traffic</div>
+      <div class="sb-locked-overlay" id="sb-lock-msg">🔒 Subscribe to see southbound traffic</div>
     </div>
   </div>
 
-  <div class="paywall" id="paywall-section">
-    <div class="paywall-icon">🔓</div>
-    <div class="paywall-title" id="paywall-title">Unlock Southbound + Full Dashboard</div>
-    <div class="paywall-sub" id="paywall-sub">Enter your email for free access. No password needed.</div>
-    <div class="paywall-form">
-      <input class="paywall-input" type="email" id="paywall-email" placeholder="your@email.com">
-      <button class="paywall-btn" onclick="requestAccess()" id="paywall-cta">Get Access</button>
+  <div class="subscribe-box" id="subscribe-section">
+    <div class="subscribe-icon">🔔</div>
+    <div class="subscribe-title" id="sub-title">Get alerts before you cross</div>
+    <div class="subscribe-sub" id="sub-sub">Enter your email to subscribe to free morning alerts + unlock southbound data.</div>
+    <div class="subscribe-form">
+      <input class="subscribe-input" type="email" id="sub-email" placeholder="your@email.com">
+      <button class="subscribe-btn" onclick="subscribe()" id="sub-cta">Subscribe Free</button>
     </div>
-    <div class="paywall-features">
-      <span class="paywall-feature" id="feat1">✓ Southbound traffic</span>
-      <span class="paywall-feature" id="feat2">✓ All 5 bridges</span>
-      <span class="paywall-feature" id="feat3">✓ No ads</span>
-      <span class="paywall-feature" id="feat4">✓ Free</span>
+    <div class="subscribe-features">
+      <span class="subscribe-feature">✓ Morning bridge alerts</span>
+      <span class="subscribe-feature">✓ Weather + what to wear</span>
+      <span class="subscribe-feature">✓ Southbound traffic</span>
+      <span class="subscribe-feature">✓ Free forever</span>
     </div>
   </div>
 
-  <div class="disclaimer" id="disclaimer-text">
+  <div class="disclaimer">
     Wait times are estimates from CBP official data and may change quickly. Always verify before traveling. Southbound estimates are traffic-based, not official border wait times. / Los tiempos son estimados y pueden cambiar rápidamente.
   </div>
 </main>
