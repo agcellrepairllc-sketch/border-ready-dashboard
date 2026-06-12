@@ -88,7 +88,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
   async function fetchFX() {
     try {
       const r = await fetch('https://v6.exchangerate-api.com/v6/7b06deec245c4dd4f5f5f147/latest/USD').then(r => r.json());
-      const mxn = r.rates.MXN;
+      const mxn = r.conversion_rates?.MXN || r.rates?.MXN;
       if (!mxn) return;
       const el = document.getElementById('fx-container');
       el.innerHTML = `<div class="fx-card">
