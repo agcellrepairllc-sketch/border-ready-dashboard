@@ -81,8 +81,8 @@ const API_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
   async function fetchAll() {
     try {
       const [wx, br] = await Promise.all([
-        fetch(`${API_BASE}/api/weather`).then(r => r.json()),
-        fetch(`${API_BASE}/api/border`).then(r => r.json()),
+        fetch(`${API_BASE}/api/proxy?endpoint=weather`).then(r => r.json()),
+        fetch(`${API_BASE}/api/proxy?endpoint=border`).then(r => r.json()),
       ]);
       weatherData = wx.success ? wx : null;
       bridgeData = br.success ? br.ports : null;
@@ -97,7 +97,7 @@ const API_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
 
   async function fetchSouthbound() {
     try {
-      const sb = await fetch(`${API_BASE}/api/southbound`).then(r => r.json());
+      const sb = await fetch(`${API_BASE}/api/proxy?endpoint=southbound`).then(r => r.json());
       if (sb.success) { window._sbData = sb.routes; renderSouthbound(sb.routes); }
     } catch(e) { console.error(e); }
   }
