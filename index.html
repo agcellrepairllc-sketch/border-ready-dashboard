@@ -222,22 +222,16 @@
 <body>
 
 <header>
-  <div class="sponsor-bar">
-    <span class="sponsor-label">Sponsored</span>
-    <span class="sponsor-text">&#128241; Phone battery draining at the bridge? We fix it fast. <strong>AG Cellular Repair Center</strong> &#8212; El Paso</span>
+  <div class="logo">
+    <div class="logo-icon">🚗</div>
+    <div>
+      <div class="logo-text">Border Ready</div>
+      <span class="logo-sub">El Paso / Juárez</span>
+    </div>
   </div>
-  <div class="header-main">
-    <div class="logo">
-      <div class="logo-icon">&#128663;</div>
-      <div>
-        <div class="logo-text">Border Ready</div>
-        <span class="logo-sub">El Paso / Ju&#225;rez</span>
-      </div>
-    </div>
-    <div class="lang-toggle">
-      <button class="lang-btn active" onclick="setLang('en')" id="btn-en">EN</button>
-      <button class="lang-btn" onclick="setLang('es')" id="btn-es">ES</button>
-    </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en')" id="btn-en">EN</button>
+    <button class="lang-btn" onclick="setLang('es')" id="btn-es">ES</button>
   </div>
 </header>
 
@@ -257,26 +251,51 @@
   <div id="fastest-container"></div>
 
   <div class="section-header">
-    <div class="section-title" id="label-mxusa">Mexico &#8594; USA</div>
+    <div class="section-title" id="label-mxusa">Mexico → USA</div>
     <div class="section-dir" id="label-northbound">Northbound</div>
   </div>
   <div id="bridges-container"><div class="loading-card"><div class="spinner"></div>Loading wait times...</div></div>
 
   <div class="section-header" style="margin-top:24px;">
-    <div class="section-title" id="label-usamx">USA &#8594; Mexico</div>
+    <div class="section-title" id="label-usamx">USA → Mexico</div>
     <div class="section-dir" id="label-southbound">Southbound</div>
   </div>
-  <div id="southbound-section"><div class="loading-card"><div class="spinner"></div>Loading southbound...</div></div>
+  <div id="southbound-section">
+    <div class="sb-locked" style="height:120px;">
+      <div class="southbound-card" style="opacity:0.3;">
+        <div><div class="sb-name">Ysleta / Zaragoza</div></div>
+        <div class="sb-status sb-heavy">Heavy</div>
+        <div><div class="sb-mins">—</div></div>
+      </div>
+      <div class="sb-locked-overlay" id="sb-lock-msg">🔒 Subscribe to see southbound traffic</div>
+    </div>
+  </div>
+
+  <div class="subscribe-box" id="subscribe-section">
+    <div class="subscribe-icon">🔔</div>
+    <div class="subscribe-title" id="sub-title">Get alerts before you cross</div>
+    <div class="subscribe-sub" id="sub-sub">Enter your email to subscribe to free morning alerts + unlock southbound data.</div>
+    <div class="subscribe-form">
+      <input class="subscribe-input" type="email" id="sub-email" placeholder="your@email.com">
+      <button class="subscribe-btn" onclick="subscribe()" id="sub-cta">Subscribe Free</button>
+    </div>
+    <div class="subscribe-features">
+      <span class="subscribe-feature">✓ Morning bridge alerts</span>
+      <span class="subscribe-feature">✓ Weather + what to wear</span>
+      <span class="subscribe-feature">✓ Southbound traffic</span>
+      <span class="subscribe-feature">✓ Free forever</span>
+    </div>
+  </div>
 
   <div class="disclaimer">
-    Wait times are estimates from CBP official data and may change quickly. Always verify before traveling. Southbound estimates are traffic-based, not official border wait times. / Los tiempos son estimados y pueden cambiar r&#225;pidamente.
+    Wait times are estimates from CBP official data and may change quickly. Always verify before traveling. Southbound estimates are traffic-based, not official border wait times. / Los tiempos son estimados y pueden cambiar rápidamente.
   </div>
 </main>
 
 <footer>
-  <div class="footer-logo">Border Ready &#128663;</div>
-  <div>El Paso / Ju&#225;rez &middot; Free border crossing information</div>
-  <div style="margin-top:4px;">Data: CBP.gov &middot; Open-Meteo &middot; Google Routes</div>
+  <div class="footer-logo">Border Ready 🚗</div>
+  <div>El Paso / Juárez · Free border crossing information</div>
+  <div style="margin-top:4px;">Data: CBP.gov · Open-Meteo · Google Routes</div>
 </footer>
 
 
