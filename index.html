@@ -222,22 +222,16 @@
 <body>
 
 <header>
-  <div class="sponsor-bar">
-    <span class="sponsor-bar-label">Sponsored</span>
-    <span class="sponsor-bar-text">📱 Phone battery draining at the bridge? We fix it fast. <strong>AG Cellular Repair Center</strong> — El Paso</span>
+  <div class="logo">
+    <div class="logo-icon">🚗</div>
+    <div>
+      <div class="logo-text">Border Ready</div>
+      <span class="logo-sub">El Paso / Juárez</span>
+    </div>
   </div>
-  <div class="header-main">
-    <div class="logo">
-      <div class="logo-icon">🚗</div>
-      <div>
-        <div class="logo-text">Border Ready</div>
-        <span class="logo-sub">El Paso / Juárez</span>
-      </div>
-    </div>
-    <div class="lang-toggle">
-      <button class="lang-lbtn active" onclick="setLang('en')" id="btn-en">EN</button>
-      <button class="lang-lbtn" onclick="setLang('es')" id="btn-es">ES</button>
-    </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" onclick="setLang('en')" id="btn-en">EN</button>
+    <button class="lang-btn" onclick="setLang('es')" id="btn-es">ES</button>
   </div>
 </header>
 
@@ -266,7 +260,32 @@
     <div class="section-title" id="label-usamx">USA → Mexico</div>
     <div class="section-dir" id="label-southbound">Southbound</div>
   </div>
-  <div id="southbound-section"><div class="loading-card"><div class="spinner"></div>Loading southbound...</div></div>
+  <div id="southbound-section">
+    <div class="sb-locked" style="height:120px;">
+      <div class="southbound-card" style="opacity:0.3;">
+        <div><div class="sb-name">Ysleta / Zaragoza</div></div>
+        <div class="sb-status sb-heavy">Heavy</div>
+        <div><div class="sb-mins">—</div></div>
+      </div>
+      <div class="sb-locked-overlay" id="sb-lock-msg">🔒 Subscribe to see southbound traffic</div>
+    </div>
+  </div>
+
+  <div class="subscribe-box" id="subscribe-section">
+    <div class="subscribe-icon">🔔</div>
+    <div class="subscribe-title" id="sub-title">Get alerts before you cross</div>
+    <div class="subscribe-sub" id="sub-sub">Enter your email to subscribe to free morning alerts + unlock southbound data.</div>
+    <div class="subscribe-form">
+      <input class="subscribe-input" type="email" id="sub-email" placeholder="your@email.com">
+      <button class="subscribe-btn" onclick="subscribe()" id="sub-cta">Subscribe Free</button>
+    </div>
+    <div class="subscribe-features">
+      <span class="subscribe-feature">✓ Morning bridge alerts</span>
+      <span class="subscribe-feature">✓ Weather + what to wear</span>
+      <span class="subscribe-feature">✓ Southbound traffic</span>
+      <span class="subscribe-feature">✓ Free forever</span>
+    </div>
+  </div>
 
   <div class="disclaimer">
     Wait times are estimates from CBP official data and may change quickly. Always verify before traveling. Southbound estimates are traffic-based, not official border wait times. / Los tiempos son estimados y pueden cambiar rápidamente.
@@ -279,167 +298,7 @@
   <div style="margin-top:4px;">Data: CBP.gov · Open-Meteo · Google Routes</div>
 </footer>
 
-<script>
-  const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
-  const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast?latitude=31.7619&longitude=-106.485&current=temperature_2m,weathercode,windspeed_10m,precipitation,apparent_temperature&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago';
-  const CBP_URL = 'https://bwt.cbp.gov/api/bwtnew';
 
-  let lang = 'en';
-
-  const T = {
-    en: { heroLabel: 'Live Conditions', heroTitle: 'Know before you cross.', heroSub: 'Bridge wait times, weather, and what to wear.', labelMxUSA: 'Mexico → USA', labelNorthbound: 'Northbound', labelUSAMx: 'USA → Mexico', labelSouthbound: 'Southbound (estimate)', feelsLike: 'Feels like', wind: 'Wind', open: 'Open', closed: 'Closed', general: 'General', readyLane: 'Ready Lane', sentri: 'SENTRI', min: 'min', lanes: 'lanes open', closed2: 'Closed', fastestLabel: 'Fastest Bridge Right Now', fastestSub: 'Ready Lane', updated: 'Updated', trafficNote: '* Traffic-based estimate', light: 'Light', moderate: 'Moderate', heavy: 'Heavy', severe: 'Severe' },
-    es: { heroLabel: 'Condiciones en Vivo', heroTitle: 'Sabe antes de cruzar.', heroSub: 'Tiempos de espera, clima, y qué ponerte.', labelMxUSA: 'México → EE.UU.', labelNorthbound: 'Rumbo al norte', labelUSAMx: 'EE.UU. → México', labelSouthbound: 'Rumbo al sur (estimado)', feelsLike: 'Sensación', wind: 'Viento', open: 'Abierto', closed: 'Cerrado', general: 'General', readyLane: 'Ready Lane', sentri: 'SENTRI', min: 'min', lanes: 'carriles abiertos', closed2: 'Cerrado', fastestLabel: 'Puente más rápido ahora', fastestSub: 'Ready Lane', updated: 'Actualizado', trafficNote: '* Estimado de tráfico', light: 'Ligero', moderate: 'Moderado', heavy: 'Pesado', severe: 'Severo' }
-  };
-
-  function t(key) { return T[lang][key] || T['en'][key] || key; }
-
-  function setLang(l) {
-    lang = l;
-    document.getElementById('btn-en').classList.toggle('active', l === 'en');
-    document.getElementById('btn-es').classList.toggle('active', l === 'es');
-    updateText();
-    if (window._sbData) renderSouthbound(window._sbData);
-  }
-
-  function updateText() {
-    document.getElementById('hero-label').textContent = t('heroLabel');
-    document.getElementById('hero-title').textContent = t('heroTitle');
-    document.getElementById('hero-sub').textContent = t('heroSub');
-    document.getElementById('label-mxusa').textContent = t('labelMxUSA');
-    document.getElementById('label-northbound').textContent = t('labelNorthbound');
-    document.getElementById('label-usamx').textContent = t('labelUSAMx');
-    document.getElementById('label-southbound').textContent = t('labelSouthbound');
-  }
-
-  function getWeatherAdvice(temp, wind, rain) {
-    let a = '';
-    if (temp < 45) a = 'Heavy jacket — cold.';
-    else if (temp < 60) a = 'Bring a jacket.';
-    else if (temp < 75) a = 'Comfortable - light layers optional.';
-    else if (temp < 90) a = 'Light clothes, you are fine.';
-    else a = 'Light clothes, bring water. Do not leave phones in hot car!';
-    if (wind > 20) a += ' Windy.';
-    if (rain > 0.05) a += ' Rain - bring umbrella.';
-    return a;
-  }
-
-  let weatherData = null, bridgeData = null;
-
-  async function fetchFX() {
-    try {
-      const r = await fetch('https://v6.exchangerate-api.com/v6/7b06deec245c4dd4f5f5f147/latest/USD').then(r => r.json());
-      const mxn = r.conversion_rates?.MXN || r.rates?.MXN;
-      if (!mxn) return;
-      document.getElementById('fx-container').innerHTML = `<div class="fx-card"><div><div class="fx-title">💱 ${lang==='es'?'Tipo de Cambio':'Exchange Rate'}</div><div class="fx-rates"><div class="fx-rate"><div class="fx-label">1 USD</div><div class="fx-value">${mxn.toFixed(2)}<span class="fx-unit"> MXN</span></div></div><div class="fx-rate"><div class="fx-label">1 MXN</div><div class="fx-value">${(1/mxn).toFixed(4)}<span class="fx-unit"> USD5��]���]���]���]��]��\��H��\��\��H��^�[��\�]KX\K���O����[��OOI�\����X�X[^�Y��IΉ�\]Y�^I�O�]���]��H�]�
-JH��ۜ��K�\��܊	і��JN�B�B��\�[���[��[ۈ�]�[
-
-H�H�ۜ�����HH]�Z]��Z\�K�[
-ٙ]�
-�PUT��T�
-K�[��O�����ۊ
-JK�]�
-Д�T�
-K�[��O�����ۊ
-JWJN�ۜ��H���\��[��X]\�]HH�[\\�]\�N�˝[\\�]\�W̛K�Y[��Z�N�˘\\�[��[\\�]\�K�[��\�˝�[��YY�LK�X�\]][ێ�˜�X�\]][ۋY�X�N��]�X]\�Y�X�J˝[\\�]\�W̛K˝�[��YY�LK˜�X�\]][ۊHN��Y�Q]HH\��^K�\�\��^J��H�����[\�O���[���ܝ۝[X�\�K��\���]
-	̍L	�H
-�ܝۘ[Y_	��K����\��\�J
-K�[��Y\�	�[\���H
-�ܝۘ[Y_	��K����\��\�J
-K�[��Y\�	�\�]I�H
-�ܝۘ[Y_	��K����\��\�J
-K�[��Y\�	�\��[�ܝI�H
-�ܝۘ[Y_	��K����\��\�J
-K�[��Y\�	��[�ۉ�H
-�ܝۘ[Y_	��K����\��\�J
-K�[��Y\�	�[Y\�X�\��H
-�ܝۘ[Y_	��K����\��\�J
-K�[��Y\�	��[�H\�\�I�JH��[��[Y[���][[Y[��RY
-	�\]K][YI�K�^�۝[�H	�
-	�\]Y	�_N�	ۙ]�]J
-K����[U[YT��[��	�[�UT����\��̋YY�]	�Z[�]N�̋YY�]	�J_X�[�\��X]\�
-N�[�\���Y�\�
-NH�]�
-JH��ۜ��K�\��܊JN�B��]���]��[�
-
-NB��\�[���[��[ۈ�]���]��[�
-
-H�H�ۜ�؈H]�Z]�]�
-	ՑT��SАT�_K�\K���]��[�
-K�[��O�����ۊ
-JNY�
-؋��X��\��H��[��˗�ؑ]HH؋���]\���[�\���]��[�
-؋���]\�N�B�H�]�
-JH��ۜ��K�\��܊JN�B�B���[��[ۈ[^P��܊JH�Y�
-[H\ӘS�\��R[�
-JJJH�]\��	�[YK[�I���ۜ��H\��R[�
-JN�Y�
-�HMJH�]\��	�[YKYܙY[���Y�
-�H�JH�]\��	�[YK^Y[�����]\��	�[YK\�Y	��B���[��[ۈ[�Q\�^J[�JH�Y�
-[[�JH�]\���[��ۜ��H
-[�K��\�][ۘ[��]\�	��K����\��\�J
-N�Y�
-˚[��Y\�	��\��Y��H˚[��Y\�	����Y	�H�OOH	ۋ�I�H�]\���[�Y�
-[�K�[^W�Z[�]\�OOH	��	��[�K�[�\���[�OOH	��H�]\���[��]\���[^N�[�K�[^W�Z[�]\�	��%	��[��[�K�[�\���[�	�	�N�B���[��[ۈ�[�\��X]\�
-H�ۜ�[H��[Y[���][[Y[��RY
-	��X]\�X�۝Z[�\��NY�
-]�X]\�]JH�[�[��\�SH	�]��\��H�\��܋X�\�����[���Y�X]\���]�����]\���B��ۜ��[\\�]\�K�Y[��Z�K�[��\Y�X�HHH�X]\�]N[�[��\�SH]��\��H��X]\�\��\��]��\��H��X]\�[XZ[���]��\��H��X]\�][\���X]���[�
-[\\�]\�J_p���]��]��\��H��X]\�Y]Z[ȏ�]��\��H��X]\�Y�Y[ȏ��
-	ٙY[�Z�I�_H	�X]���[�
-�Y[��Z�J_p���]��]��\��H��X]\�]�[����
-	��[�	�_H	��[��\H\�]���]���]��]��\��H��X]\�XY�X�H��'�eH	�Y�X�_O�]���]��B���[��[ۈ�[�\���Y�\�
-H�ۜ�[H��[Y[���][[Y[��RY
-	؜�Y�\�X�۝Z[�\��N�ۜ��HH��[Y[���][[Y[��RY
-	٘\�\�X�۝Z[�\��NY�
-X��Y�Q]JH�[�[��\�SH	�]��\��H�\��܋X�\�����[���Y�Z][Y\ˏ�]�����K�[��\�SI����]\���B��ۜ�XZ[���Y�\�H�М�Y�I�	�\���	��[�ۉ�	�\�]I�	��[�I�N�ۜ�ܝ�H��Y�Q]K��[\�O���ۜ��[YHH�ܛ���[��ۘ[YH	����]\��XZ[���Y�\˜��YJ�O��[YK�[��Y\��JH	���[YHOOH	���JN]�\�\�H�[�\�\�Z[��HNNNܝ˙�ܑXX�
-O���ۜ�H[�Q\�^J�\��[��\�ݙZX�W�[�\�˜�XYW�[�\�N�Y�
-	���[^HOOH	��%	�	��\��R[�
-�[^JH�\�\�Z[��H��\�\�Z[��H\��R[�
-�[^JN��\�\�H��[YN��ܛ���[��ۘ[YH�ܝۘ[YKZ[�Έ�[^HN�HJN�K�[��\�SH�\�\��]��\��H��\�\�X�[��\���]��]��\��H��\�\�[X�[����H	�
-	٘\�\�X�[	�_O�]��]��\��H��\�\�[�[YH��٘\�\���[Y_O�]��]��[OH��۝\�^�N�L\���܎��ؘJ�MK�MK�MK��N�X\��[�]���ȏ��
-	٘\�\��X��_O�]���]��]��]��\��H��\�\�][YH��٘\�\��Z[��O�]��]��\��H��\�\�][�]���
-	�Z[��_O�]���]���]���	��][H	��ܝ˙�ܑXX�
-O��ۜ��[YHH�ܛ���[��ۘ[YH�ܝۘ[YN�ۜ�\��[�H
-�ܝ��]\�	��K����\��\�J
-K�[��Y\�	�X�Y\���H
-�ܝ��]\�	��K����\��\�J
-K�[��Y\�	��[��N�ۜ��H�\��[��\�ݙZX�W�[�\��ۜ��[�\�[H[�Q\�^J�˜�[�\��[�\�N�ۜ��XYHH[�Q\�^J�˜�XYW�[�\�N�ۜ��[��HH[�Q\�^J�˓�VT���S��W�[�\�N�ۜ��ۜ��X�[ۈH��ۜ��X�[ۗۛ�X�O˝�[J
-N[
-�H]��\��H���Y�KX�\���]��\��H���Y�KZXY\���]��]��\��H���Y�K[�[YH��ۘ[Y_O�]��]��\��H���Y�KZ�\�ȏ����\��	��O�]���]��]��\��H���Y�K\�]\�	�\��[����]\�[�[�Ή��]\�X���Y	�H���\��[��
-	��[��N�
-	����Y	�_O�]���]��]��\��H�[�KYܚY��]��\��H�[�KX�[��]��\��H�[�K[X�[���
-	��[�\�[	�_O�]����[�\�[�]��\��H�[�K][YH	�[^P��܊�[�\�[�[^J_H����[�\�[�[^_O�[��\��H�[�K][�]��	�
-	�Z[��_O��[���]��]��\��H�[�K[[�\ȏ���[�\�[��[�H	�
-	�[�\��_O�]���]��\��H�[�K][YH[YK[�H���
-	����Y��_O�]��O�]��]��\��H�[�KX�[��]��\��H�[�K[X�[���
-	ܙXYS[�I�_O�]��ܙXYO�]��\��H�[�K][YH	�[^P��܊�XYK�[^J_H��ܙXYK�[^_O�[��\��H�[�K][�]��	�
-	�Z[��_O��[���]��]��\��H�[�K[[�\ȏ�ܙXYK��[�H	�
-	�[�\��_O�]���]��\��H�[�K][YH[YK[�H���
-	����Y��_O�]��O�]��]��\��H�[�KX�[��]��\��H�[�K[X�[���
-	��[��I�_O�]����[��O�]��\��H�[�K][YH	�[^P��܊�[��K�[^J_H����[��K�[^_O�[��\��H�[�K][�]��	�
-	�Z[��_O��[���]��]��\��H�[�K[[�\ȏ���[��K��[�H	�
-	�[�\��_O�]���]��\��H�[�K][YH[YK[�H���
-	����Y��_O�]��O�]���]����ۜ��X�[ۏ�]��\��H��ۜ��X�[ۋ[��X�H����;�#�	��ۜ��X�[۟O�]�����O�]��JN[�[��\�SH[	�]��\��H�\��܋X�\�������Y�H]H��[���]���B���[��[ۈ�[�\���]��[�
-��]\�H�ۜ�[H��[Y[���][[Y[��RY
-	���]��[�\�X�[ۉ�N�ۜ���H�Y���؋[Y�	�[�\�]N��؋[[�\�]I�X]�N��؋ZX]�I��]�\�N��؋\�]�\�I�N�ۜ��H�Y��
-	�Y�	�K[�\�]N�
-	�[�\�]I�KX]�N�
-	�X]�I�K�]�\�N�
-	��]�\�I�HN[�[��\�SH��]\˛X\
-�O�]��\��H���]��[�X�\���]��]��\��H�؋[�[YH��܋��[Y_O�]��]��\��H�؋[��H���
-	��Y��Xӛ�I�_O�]���]��]��\��H�؋\�]\�	���܋��]\�_	�؋[Y�	�H����܋��]\�_���]\�O�]��]��]��\��H�؋[Z[�ȏ�܋�Z[�]\�O�[��\��H�؋[Z[��][�]��	�
-	�Z[��_O��[���]���]���]��
-K���[�	��NB��\]U^
-
-N�]��
-
-N�]�[
-
-N�][�\��[
-�]�[H
-��
-�L
-N�][�\��[
-�]���
-��
-�L
-N��ܚ\��؛�O���[
+  <script src="script.js"></script>
+</body>
+</html>
