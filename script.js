@@ -3,7 +3,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
   const CBP_URL = 'https://bwt.cbp.gov/api/bwtnew';
 
   let lang = 'en';
-  let subscribed = localStorage.getItem('br_subscribed') === 'true';
+  
 
   const T = {
     en: {
@@ -113,7 +113,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
       renderWeather();
       renderBridges();
     } catch(e) { console.error(e); }
-    if (subscribed) fetchSouthbound();
+    fetchSouthbound();
   }
 
   async function fetchSouthbound() {
