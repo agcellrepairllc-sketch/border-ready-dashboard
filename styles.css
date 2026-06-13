@@ -79,3 +79,7 @@
   .error-card { background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; text-align: center; color: var(--red); font-size: 13px; margin-bottom: 10px; }
   footer { text-align: center; padding: 24px 16px 32px; font-size: 11px; color: var(--muted); }
   .footer-logo { font-weight: 700; color: var(--ink); font-size: 13px; margin-bottom: 4px; }
+.sponsor-bar{background:#e8354a;padding:7px 16px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.sponsor-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,0.7);background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:3px;white-space:nowrap;}
+.sponsor-text{font-size:11px;font-weight:600;color:#fff;text-align:center;line-height:1.3;}
+.header-main{padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:56px;}
