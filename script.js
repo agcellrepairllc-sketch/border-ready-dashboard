@@ -119,8 +119,38 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
   async function fetchSouthbound() {
     try {
       const sb = await fetch(`${VERCEL_BASE}/api/southbound`).then(r => r.json());
-      if (sb.success) { window._sbData = sb.routes; renderSouthbound(sb.routes); }
+      if (sb.success) {
+        window._sbData = sb.routes;
+        renderSouthbound(sb.routes);
+        if (sb.northboundEstimates) renderNorthboundEstimates(sb.northboundEstimates);
+      }
     } catch(e) { console.error(e); }
+  }
+
+  function renderNorthboundEstimates(estimates) {
+    const bridges = document.querySelectorAll('.bridge-card');
+    bridges.forEach(card => {
+      const nameEl = card.querySelector('.bridge-name');
+      if (!nameEl) return;
+      const cardName = nameEl.textContent.toLowerCase();
+      const match = estimates.find(e =>
+        cardName.includes('bota') && e.name.toLowerCase().includes('bota') ||
+        cardName.includes('americas') && e.name.toLowerCase().includes('bota') ||
+        cardName.includes('ysleta') && e.name.toLowerCase().includes('ysleta') ||
+        cardName.includes('zaragoza') && e.name.toLowerCase().includes('ysleta') ||
+        cardName.includes('stanton') && e.name.toLowerCase().includes('stanton') ||
+        cardName.includes('santa fe') && e.name.toLowerCase().includes('stanton')
+      );
+      if (!match) return;
+      const sc = { Light:'sb-light', Moderate:'sb-moderate', Heavy:'sb-heavy', Severe:'sb-severe' };
+      const existing = card.querySelector('.nb-estimate');
+      if (existing) existing.remove();
+      const div = document.createElement('div');
+      div.className = 'nb-estimate';
+      div.style.cssText = 'padding:6px 14px;font-size:11px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;';
+      div.innerHTML = `<span style="color:var(--muted);">&#127758; Traffic estimate (MX approach)</span><span class="sb-status ${sc[match.status]||'sb-light'}" style="font-size:10px;">${match.status} &mdash; ${match.minutes} min</span>`;
+      card.appendChild(div);
+    });
   }
 
   function delayColor(m) {
