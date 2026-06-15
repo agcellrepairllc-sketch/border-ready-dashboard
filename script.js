@@ -3,7 +3,6 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
   const CBP_URL = 'https://bwt.cbp.gov/api/bwtnew';
 
   let lang = 'en';
-  
 
   const T = {
     en: {
@@ -15,13 +14,8 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
       general: 'General', readyLane: 'Ready Lane', sentri: 'SENTRI',
       min: 'min', lanes: 'lanes open', closed2: 'Closed',
       fastestLabel: 'Fastest Bridge Right Now', fastestSub: 'Ready Lane',
-      subTitle: 'Get alerts before you cross',
-      subSub: 'Enter your email to subscribe to free morning alerts + unlock southbound data.',
-      subCta: 'Subscribe Free',
       updated: 'Updated',
-      sbLock: '🔒 Subscribe to see southbound traffic',
       trafficNote: '* Traffic-based estimate, not official wait time',
-      successMsg: '✅ Subscribed! Check your email.',
       light: 'Light', moderate: 'Moderate', heavy: 'Heavy', severe: 'Severe',
     },
     es: {
@@ -33,13 +27,8 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
       general: 'General', readyLane: 'Ready Lane', sentri: 'SENTRI',
       min: 'min', lanes: 'carriles abiertos', closed2: 'Cerrado',
       fastestLabel: 'Puente más rápido ahora', fastestSub: 'Ready Lane',
-      subTitle: 'Recibe alertas antes de cruzar',
-      subSub: 'Ingresa tu correo para alertas matutinas gratis + ver el tráfico al sur.',
-      subCta: 'Suscribirse Gratis',
       updated: 'Actualizado',
-      sbLock: '🔒 Suscríbete para ver el tráfico al sur',
       trafficNote: '* Estimado basado en tráfico, no tiempo oficial',
-      successMsg: '✅ ¡Suscrito! Revisa tu correo.',
       light: 'Ligero', moderate: 'Moderado', heavy: 'Pesado', severe: 'Severo',
     }
   };
@@ -62,13 +51,6 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
     document.getElementById('label-northbound').textContent = t('labelNorthbound');
     document.getElementById('label-usamx').textContent = t('labelUSAMx');
     document.getElementById('label-southbound').textContent = t('labelSouthbound');
-    const lockMsg = document.getElementById('sb-lock-msg');
-    if (lockMsg) lockMsg.textContent = t('sbLock');
-    if (document.getElementById('sub-title')) {
-      document.getElementById('sub-title').textContent = t('subTitle');
-      document.getElementById('sub-sub').textContent = t('subSub');
-      document.getElementById('sub-cta').textContent = t('subCta');
-    }
   }
 
   function getWeatherAdvice(temp, wind, rain) {
@@ -122,35 +104,8 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
       if (sb.success) {
         window._sbData = sb.routes;
         renderSouthbound(sb.routes);
-        if (sb.northboundEstimates) renderNorthboundEstimates(sb.northboundEstimates);
       }
     } catch(e) { console.error(e); }
-  }
-
-  function renderNorthboundEstimates(estimates) {
-    const bridges = document.querySelectorAll('.bridge-card');
-    bridges.forEach(card => {
-      const nameEl = card.querySelector('.bridge-name');
-      if (!nameEl) return;
-      const cardName = nameEl.textContent.toLowerCase();
-      const match = estimates.find(e =>
-        cardName.includes('bota') && e.name.toLowerCase().includes('bota') ||
-        cardName.includes('americas') && e.name.toLowerCase().includes('bota') ||
-        cardName.includes('ysleta') && e.name.toLowerCase().includes('ysleta') ||
-        cardName.includes('zaragoza') && e.name.toLowerCase().includes('ysleta') ||
-        cardName.includes('stanton') && e.name.toLowerCase().includes('stanton') ||
-        cardName.includes('santa fe') && e.name.toLowerCase().includes('stanton')
-      );
-      if (!match) return;
-      const sc = { Light:'sb-light', Moderate:'sb-moderate', Heavy:'sb-heavy', Severe:'sb-severe' };
-      const existing = card.querySelector('.nb-estimate');
-      if (existing) existing.remove();
-      const div = document.createElement('div');
-      div.className = 'nb-estimate';
-      div.style.cssText = 'padding:6px 14px;font-size:11px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;';
-      div.innerHTML = `<span style="color:var(--muted);">&#127758; Traffic estimate (MX approach)</span><span class="sb-status ${sc[match.status]||'sb-light'}" style="font-size:10px;">${match.status} &mdash; ${match.minutes} min</span>`;
-      card.appendChild(div);
-    });
   }
 
   function delayColor(m) {
@@ -255,24 +210,6 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
         <div class="sb-status ${sc[r.status]||'sb-light'}">${sl[r.status]||r.status}</div>
         <div><div class="sb-mins">${r.minutes}<span class="sb-mins-unit"> ${t('min')}</span></div></div>
       </div>`).join('');
-  }
-
-  function subscribe() {
-    const email = document.getElementById('sub-email').value.trim();
-    if (!email || !email.includes('@')) return;
-    const btn = document.getElementById('sub-cta');
-    btn.textContent = '...';
-    btn.disabled = true;
-    setTimeout(() => {
-      localStorage.setItem('br_subscribed', 'true');
-      subscribed = true;
-      document.getElementById('subscribe-section').innerHTML = `
-        <div style="text-align:center;padding:20px;">
-          <div style="font-size:28px;margin-bottom:8px;">📬</div>
-          <div style="font-size:15px;font-weight:700;color:var(--ink);">${t('successMsg')}</div>
-        </div>`;
-      fetchSouthbound();
-    }, 800);
   }
 
   updateText();
