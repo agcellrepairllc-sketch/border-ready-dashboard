@@ -39,6 +39,22 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
     lang = l;
     document.getElementById('btn-en').classList.toggle('active', l === 'en');
     document.getElementById('btn-es').classList.toggle('active', l === 'es');
+    function fetchFX() {
+  fetch('https://v6.exchangerate-api.com/v6/7b06deec245c4dd4f5f5f147/latest/USD')
+    .then(function(r){ return r.json(); })
+    .then(function(r){
+      var mxn = (r.conversion_rates && r.conversion_rates.MXN) || (r.rates && r.rates.MXN);
+      if (!mxn) return;
+      var el = document.getElementById('fx-container');
+      if (!el) return;
+      el.innerHTML = '<div class="fx-card"><div><div class="fx-title">💱 Exchange Rate</div>'
+        + '<div class="fx-rates">'
+        + '<div class="fx-rate"><div class="fx-label">1 USD</div><div class="fx-value">' + mxn.toFixed(2) + '<span class="fx-unit"> MXN</span></div></div>'
+        + '</div></div>'
+        + '<div class="fx-source">exchangerate-api.com<br>Updated today</div></div>';
+    })
+    .catch(function(e){ console.error('FX:', e); });
+}
     updateText();
     if (window._sbData) renderSouthbound(window._sbData);
   }
@@ -212,7 +228,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
         <div><div class="sb-mins">${r.minutes}<span class="sb-mins-unit"> ${t('min')}</span></div></div>
       </div>`).join('');
   }
-function initMaps() {
+window.initMaps = function() {
     if (!document.querySelector('.bridge-card')) {
       setTimeout(initMaps, 500);
       return;
