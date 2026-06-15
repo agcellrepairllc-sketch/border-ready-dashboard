@@ -248,5 +248,7 @@ card.appendChild(legend);
   }
 
   updateText();
-  fetchAll();
-  setInterval(fetchAll, 5 * 60 * 1000);
+fetchFX();
+fetchAll();
+setInterval(fetchAll, 5 * 60 * 1000);
+setInterval(fetchFX, 60 * 60 * 1000);
