@@ -225,7 +225,7 @@ function renderSouthbound(routes) {
   const sl = { Light: t('light'), Moderate: t('moderate'), Heavy: t('heavy'), Severe: t('severe') };
   el.innerHTML = routes.map(r => `
     <div class="southbound-card">
-      <div><div class="sb-name">${r.name}</div><div class="sb-note">${t('trafficNote')}</div></div>
+      <div><div class="sb-name">${r.name}</div><<div class="sb-note">${r.description || t('trafficNote')}</div></div>
       <div class="sb-status ${sc[r.status]||'sb-light'}">${sl[r.status]||r.status}</div>
       <div><div class="sb-mins">${r.minutes}<span class="sb-mins-unit"> ${t('min')}</span></div></div>
     </div>`).join('');
