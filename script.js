@@ -229,9 +229,13 @@ function initMaps() {
       const key = Object.keys(BRIDGE_COORDS).find(k => name.includes(k));
       if (!key) return;
       const mapDiv = document.createElement('div');
-      mapDiv.className = 'bridge-map';
-    mapDiv.style.cssText = 'height:280px;border-top:1px solid #e2e8ed;';
-      card.appendChild(mapDiv);
+mapDiv.className = 'bridge-map';
+mapDiv.style.cssText = 'height:280px;border-top:1px solid #e2e8ed;';
+card.appendChild(mapDiv);
+const legend = document.createElement('div');
+legend.style.cssText = 'padding:6px 14px;font-size:10px;color:#7a8fa0;display:flex;gap:12px;border-top:1px solid #e2e8ed;flex-wrap:wrap;';
+legend.innerHTML = '<span>🟢 Free flow</span><span>🟡 Moderate</span><span>🔴 Heavy</span><span>⬛ Standstill</span>';
+card.appendChild(legend);
       const map = new google.maps.Map(mapDiv, {
         center: BRIDGE_COORDS[key],
         zoom: 15,
