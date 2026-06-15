@@ -94,6 +94,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
         `${t('updated')}: ${new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}`;
       renderWeather();
       renderBridges();
+      if (typeof google !== 'undefined') initMaps();
     } catch(e) { console.error(e); }
     fetchSouthbound();
   }
@@ -210,6 +211,30 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
         <div class="sb-status ${sc[r.status]||'sb-light'}">${sl[r.status]||r.status}</div>
         <div><div class="sb-mins">${r.minutes}<span class="sb-mins-unit"> ${t('min')}</span></div></div>
       </div>`).join('');
+  }
+function initMaps() {
+    const BRIDGE_COORDS = {
+      'Bridge': { lat: 31.7606, lng: -106.4522 },
+      'Stanton': { lat: 31.7456, lng: -106.4831 },
+      'Ysleta': { lat: 31.6741, lng: -106.3357 },
+    };
+
+    document.querySelectorAll('.bridge-card').forEach(card => {
+      const name = card.querySelector('.bridge-name')?.textContent || '';
+      const key = Object.keys(BRIDGE_COORDS).find(k => name.includes(k));
+      if (!key) return;
+      const mapDiv = document.createElement('div');
+      mapDiv.style.cssText = 'height:280px;border-top:1px solid #e2e8ed;';
+      card.appendChild(mapDiv);
+      const map = new google.maps.Map(mapDiv, {
+        center: BRIDGE_COORDS[key],
+        zoom: 15,
+        disableDefaultUI: true,
+        zoomControl: true,
+      });
+      new google.maps.TrafficLayer().setMap(map);
+      new google.maps.Marker({ position: BRIDGE_COORDS[key], map });
+    });
   }
 
   updateText();
