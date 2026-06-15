@@ -239,7 +239,7 @@ function initMaps() {
         zoomControl: true,
       });
       new google.maps.TrafficLayer().setMap(map);
-      new google.maps.Marker({ position: BRIDGE_COORDS[key], map });
+      new google.maps.Marker({ position: BRIDGE_COORDS[key], map, icon: { path: google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: '#e8354a', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2 } });
     });
   }
 
