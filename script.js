@@ -213,6 +213,11 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
       </div>`).join('');
   }
 function initMaps() {
+    if (!document.querySelector('.bridge-card')) {
+      setTimeout(initMaps, 500);
+      return;
+    }
+    document.querySelectorAll('.bridge-map').forEach(el => el.remove());
     const BRIDGE_COORDS = {
       'Bridge': { lat: 31.7606, lng: -106.4522 },
       'Stanton': { lat: 31.7456, lng: -106.4831 },
@@ -224,7 +229,8 @@ function initMaps() {
       const key = Object.keys(BRIDGE_COORDS).find(k => name.includes(k));
       if (!key) return;
       const mapDiv = document.createElement('div');
-      mapDiv.style.cssText = 'height:280px;border-top:1px solid #e2e8ed;';
+      mapDiv.className = 'bridge-map';
+    mapDiv.style.cssText = 'height:280px;border-top:1px solid #e2e8ed;';
       card.appendChild(mapDiv);
       const map = new google.maps.Map(mapDiv, {
         center: BRIDGE_COORDS[key],
