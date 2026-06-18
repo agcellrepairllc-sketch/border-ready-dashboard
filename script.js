@@ -2,7 +2,7 @@ const VERCEL_BASE = 'https://border-ready-edgar-stripe-webhook.vercel.app';
 const WEATHER_URL = 'https://api.open-meteo.com/v1/forecast?latitude=31.7619&longitude=-106.485&current=temperature_2m,weathercode,windspeed_10m,precipitation,apparent_temperature&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago';
 const CBP_URL = 'https://bwt.cbp.gov/api/bwtnew';
 
-let lang = 'en';
+let lang = 'es'; // Default Spanish — 90% of users are Spanish speakers
 
 const T = {
   en: {
@@ -17,6 +17,16 @@ const T = {
     updated: 'Updated',
     trafficNote: '* Traffic-based estimate, not official wait time',
     light: 'Light', moderate: 'Moderate', heavy: 'Heavy', severe: 'Severe',
+    // Northbound queue section
+    queueSectionTitle: 'Zaragoza Line Movement',
+    queueSectionSub: 'Mexico Side · Traffic-based estimate',
+    queueStartLabel: 'Line likely starts near',
+    queueSpeedLabel: 'Line speed',
+    queueAdvanceLabel: 'Time to advance 0.5 mi',
+    queueNoData: 'No traffic data available at this time.',
+    queueDisclaimer: 'Estimates based on live road traffic signals. Not official CBP data.',
+    queuePointsTitle: 'Approach road conditions',
+    mph: 'mph',
   },
   es: {
     heroLabel: 'Condiciones en Vivo', heroTitle: 'Sabe antes de cruzar.',
@@ -30,6 +40,16 @@ const T = {
     updated: 'Actualizado',
     trafficNote: '* Estimado basado en tráfico, no tiempo oficial',
     light: 'Ligero', moderate: 'Moderado', heavy: 'Pesado', severe: 'Severo',
+    // Northbound queue section
+    queueSectionTitle: 'Movimiento de la Fila — Zaragoza',
+    queueSectionSub: 'Lado México · Estimado basado en tráfico',
+    queueStartLabel: 'La fila inicia cerca de',
+    queueSpeedLabel: 'Velocidad de la fila',
+    queueAdvanceLabel: 'Tiempo para avanzar 0.5 millas',
+    queueNoData: 'No hay datos de tráfico disponibles en este momento.',
+    queueDisclaimer: 'Estimados basados en señales de tráfico en tiempo real. No son datos oficiales de CBP.',
+    queuePointsTitle: 'Condiciones en el acceso',
+    mph: 'mph',
   }
 };
 
@@ -41,6 +61,7 @@ function setLang(l) {
   document.getElementById('btn-es').classList.toggle('active', l === 'es');
   updateText();
   if (window._sbData) renderSouthbound(window._sbData);
+  if (window._nbData) renderNorthboundQueue(window._nbData);
 }
 
 function updateText() {
@@ -115,6 +136,7 @@ async function fetchAll() {
     if (typeof google !== 'undefined') initMaps();
   } catch(e) { console.error(e); }
   fetchSouthbound();
+  fetchNorthbound();
 }
 
 async function fetchSouthbound() {
@@ -125,6 +147,20 @@ async function fetchSouthbound() {
       renderSouthbound(sb.routes);
     }
   } catch(e) { console.error(e); }
+}
+
+async function fetchNorthbound() {
+  try {
+    const nb = await fetch(`${VERCEL_BASE}/api/northbound?bridge=zaragoza`).then(r => r.json());
+    if (nb.success) {
+      window._nbData = nb;
+      renderNorthboundQueue(nb);
+    }
+  } catch(e) {
+    console.error('Northbound queue fetch error:', e);
+    const el = document.getElementById('northbound-queue-section');
+    if (el) el.innerHTML = '';
+  }
 }
 
 function delayColor(m) {
@@ -219,13 +255,95 @@ function renderBridges() {
   el.innerHTML = html || `<div class="error-card">No bridge data found.</div>`;
 }
 
+function renderNorthboundQueue(data) {
+  const el = document.getElementById('northbound-queue-section');
+  if (!el) return;
+
+  if (!data || !data.success) {
+    el.innerHTML = '';
+    return;
+  }
+
+  const msg = lang === 'es' ? data.public_message_es : data.public_message_en;
+  const status = data.line_movement_status;
+  const advance = data.minutes_to_advance_0_5_miles;
+  const speedMph = data.effective_line_speed_mph;
+  const queueStart = data.queue_start_landmark;
+  const points = data.points || [];
+
+  // Points table rows
+  const pointsHtml = points.map(p => {
+    if (!p.available) {
+      return `<div class="nb-point-row">
+        <span class="nb-point-name">${p.landmark}</span>
+        <span class="nb-point-status nb-point-na">—</span>
+      </div>`;
+    }
+    const statusEmoji = p.status?.emoji || '—';
+    const statusLabel = lang === 'es' ? (p.status?.labelEs || p.status?.label || '') : (p.status?.label || '');
+    return `<div class="nb-point-row">
+      <span class="nb-point-name">${p.landmark}</span>
+      <span class="nb-point-status">${statusEmoji} ${statusLabel}</span>
+      <span class="nb-point-speed">${p.currentSpeedMph !== null ? p.currentSpeedMph + ' mph' : ''}</span>
+    </div>`;
+  }).join('');
+
+  // Main status class for color coding
+  const statusClass = status ? {
+    'Not moving':     'nb-status-stopped',
+    'Sin movimiento': 'nb-status-stopped',
+    'Crawling':       'nb-status-crawling',
+    'Muy lento':      'nb-status-crawling',
+    'Moving slowly':  'nb-status-slow',
+    'Avanzando lento':'nb-status-slow',
+    'Moving':         'nb-status-moving',
+    'Avanzando bien': 'nb-status-moving',
+  }[status.label] || 'nb-status-slow' : 'nb-status-na';
+
+  const statusDisplay = status
+    ? `${status.emoji} ${lang === 'es' ? status.labelEs : status.label}`
+    : '—';
+
+  el.innerHTML = `
+    <div class="section-header" style="margin-top:24px;">
+      <div class="section-title">${t('queueSectionTitle')}</div>
+      <div class="section-dir">${t('queueSectionSub')}</div>
+    </div>
+    <div class="nb-queue-card">
+      <div class="nb-status-row">
+        <div class="nb-status-badge ${statusClass}">${statusDisplay}</div>
+        ${speedMph !== null ? `<div class="nb-speed">${speedMph} <span class="nb-speed-unit">${t('mph')}</span></div>` : ''}
+      </div>
+
+      ${queueStart ? `<div class="nb-detail-row">
+        <span class="nb-detail-label">${t('queueStartLabel')}</span>
+        <span class="nb-detail-value">${queueStart}</span>
+      </div>` : ''}
+
+      ${advance ? `<div class="nb-detail-row">
+        <span class="nb-detail-label">${t('queueAdvanceLabel')}</span>
+        <span class="nb-detail-value">${advance.low}–${advance.high} ${t('min')}</span>
+      </div>` : ''}
+
+      <div class="nb-public-msg">${msg}</div>
+
+      ${points.length > 0 ? `
+        <div class="nb-points-title">${t('queuePointsTitle')}</div>
+        <div class="nb-points-list">${pointsHtml}</div>
+      ` : ''}
+
+      <div class="nb-disclaimer">* ${t('queueDisclaimer')}</div>
+    </div>`;
+}
+
 function renderSouthbound(routes) {
   const el = document.getElementById('southbound-section');
   const sc = { Light:'sb-light', Moderate:'sb-moderate', Heavy:'sb-heavy', Severe:'sb-severe' };
   const sl = { Light: t('light'), Moderate: t('moderate'), Heavy: t('heavy'), Severe: t('severe') };
+  // FIX: was <<div class="sb-note"> (double chevron bug)
   el.innerHTML = routes.map(r => `
     <div class="southbound-card">
-      <div><div class="sb-name">${r.name}</div><<div class="sb-note">${r.description || t('trafficNote')}</div></div>
+      <div><div class="sb-name">${r.name}</div><div class="sb-note">${r.description || t('trafficNote')}</div></div>
       <div class="sb-status ${sc[r.status]||'sb-light'}">${sl[r.status]||r.status}</div>
       <div><div class="sb-mins">${r.minutes}<span class="sb-mins-unit"> ${t('min')}</span></div></div>
     </div>`).join('');
