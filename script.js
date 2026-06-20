@@ -21,7 +21,6 @@ const T = {
     queueSectionTitle: 'Zaragoza Bridge-Area Traffic',
     queueSectionSub: 'Mexico Side · Traffic-based estimate',
     queueSpeedLabel: 'Current speed',
-    queueAdvanceLabel: 'Time to advance 0.8 km',
     queueNoData: 'No traffic data available at this time.',
     queueDisclaimer: 'Estimates based on live road traffic signals near the bridge approach. Not official CBP data.',
     queueDataQuality: 'Data quality',
@@ -43,7 +42,6 @@ const T = {
     queueSectionTitle: 'Tráfico Cerca del Puente — Zaragoza',
     queueSectionSub: 'Lado México · Estimado basado en tráfico',
     queueSpeedLabel: 'Velocidad actual',
-    queueAdvanceLabel: 'Tiempo para avanzar 0.8 km',
     queueNoData: 'No hay datos de tráfico disponibles en este momento.',
     queueDisclaimer: 'Estimados basados en señales de tráfico en tiempo real cerca del acceso al puente. No son datos oficiales de CBP.',
     queueDataQuality: 'Calidad de datos',
@@ -264,10 +262,7 @@ function renderNorthboundQueue(data) {
 
   const msg = lang === 'es' ? data.public_message_es : data.public_message_en;
   const status = data.status;
-  const advance = data.minutes_to_advance;
   const speedKph = data.effective_speed_kph;
-  const dataQuality = data.data_quality;
-  const usedFallback = data.used_fallback;
 
   // Main status class for color coding
   const statusClass = status ? {
@@ -296,14 +291,7 @@ function renderNorthboundQueue(data) {
         ${speedKph !== null ? `<div class="nb-speed">${speedKph} <span class="nb-speed-unit">${t('kph')}</span></div>` : ''}
       </div>
 
-      ${advance ? `<div class="nb-detail-row">
-        <span class="nb-detail-label">${t('queueAdvanceLabel')}</span>
-        <span class="nb-detail-value">${advance.low}–${advance.high} ${t('min')}</span>
-      </div>` : ''}
-
       <div class="nb-public-msg">${msg}</div>
-
-      ${dataQuality ? `<div class="nb-data-quality">${t('queueDataQuality')}: ${dataQuality}${usedFallback ? ' ⚠️' : ''}</div>` : ''}
 
       <div class="nb-disclaimer">* ${t('queueDisclaimer')}</div>
     </div>`;
