@@ -151,6 +151,12 @@ async function fetchNorthbound() {
     if (nb.success) {
       window._nbData = nb;
       renderNorthboundQueue(nb);
+      // Re-run initMaps once northbound data arrives so the Ysleta map's
+      // jam-aware center/zoom applies on first load too, not just on the
+      // NEXT 5-minute refresh cycle (fetchNorthbound resolves after
+      // initMaps' first call on page load, since fetchAll calls initMaps
+      // before fetchNorthbound even starts).
+      if (typeof google !== 'undefined' && typeof initMaps === 'function') initMaps();
     }
   } catch(e) {
     console.error('Northbound queue fetch error:', e);
@@ -330,6 +336,60 @@ window.initMaps = function() {
     'Stanton': { lat: 31.7456, lng: -106.4831 },
     'Ysleta': { lat: 31.6741, lng: -106.3357 },
   };
+
+  // Coordinate lookup for Ysleta/Zaragoza northbound points — mirrors the
+  // POINTS table in api/northbound.js. Used to compute a jam-aware map
+  // center/zoom instead of a fixed view, so the visible map area matches
+  // where congestion is actually detected right now. Added 2026-06-21 as
+  // a test on Ysleta specifically before deciding whether to extend this
+  // to BOTA/Stanton (which have more complex, sometimes police-redirected
+  // approach roads — needs separate design).
+  const ZARAGOZA_POINTS = {
+    H:       { lat: 31.670310, lng: -106.358283 },
+    G:       { lat: 31.668804, lng: -106.353700 },
+    F:       { lat: 31.667781, lng: -106.349835 },
+    E:       { lat: 31.668321, lng: -106.347597 },
+    D:       { lat: 31.668860, lng: -106.346129 },
+    D2:      { lat: 31.669146, lng: -106.345286 },
+    C:       { lat: 31.669396, lng: -106.344658 },
+    B:       { lat: 31.670093, lng: -106.342804 },
+    A:       { lat: 31.670927, lng: -106.340409 },
+    Toll:    { lat: 31.671034, lng: -106.340177 },
+    Customs: { lat: 31.671210, lng: -106.337087 },
+  };
+
+  // Given two point IDs (far/near jam range), compute a center coordinate
+  // and a zoom level tight enough to clearly show that stretch on mobile.
+  function getJamAwareView(farId, nearId) {
+    const far = ZARAGOZA_POINTS[farId];
+    const near = ZARAGOZA_POINTS[nearId];
+    if (!far || !near) return null;
+    const center = { lat: (far.lat + near.lat) / 2, lng: (far.lng + near.lng) / 2 };
+    // Safety check: if either point had malformed/missing lat-lng (NaN),
+    // bail out to the fixed fallback view rather than pass bad coordinates
+    // to Google Maps.
+    if (isNaN(center.lat) || isNaN(center.lng)) return null;
+    // Rough distance-based zoom pick — closer-together points (like the
+    // D-D2-C cluster) need a tighter zoom than farther-apart ones (like H-G).
+    const distKm = haversineKm(far, near);
+    let zoom = 16;
+    if (distKm > 1.0) zoom = 14;
+    else if (distKm > 0.5) zoom = 15;
+    else if (distKm > 0.2) zoom = 16;
+    else zoom = 17;
+    return { center, zoom };
+  }
+
+  function haversineKm(p1, p2) {
+    const R = 6371;
+    const dLat = (p2.lat - p1.lat) * Math.PI / 180;
+    const dLng = (p2.lng - p1.lng) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+      Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) *
+      Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
   document.querySelectorAll('.bridge-card').forEach(card => {
     const name = card.querySelector('.bridge-name')?.textContent || '';
     const key = Object.keys(BRIDGE_COORDS).find(k => name.includes(k));
@@ -342,9 +402,19 @@ window.initMaps = function() {
     legend.style.cssText = 'padding:6px 14px;font-size:10px;color:#7a8fa0;display:flex;gap:12px;border-top:1px solid #e2e8ed;flex-wrap:wrap;';
     legend.innerHTML = '<span>🟢 Free flow</span><span>🟡 Moderate</span><span>🔴 Heavy</span><span>⬛ Standstill</span>';
     card.appendChild(legend);
+
+    // Default view (fixed, same as before)
+    let mapView = { center: BRIDGE_COORDS[key], zoom: 15 };
+
+    // Ysleta-specific: use jam-aware center/zoom if we have live range data
+    if (key === 'Ysleta' && window._nbData && window._nbData.jam_range_far_point_id && window._nbData.jam_range_near_point_id) {
+      const jamView = getJamAwareView(window._nbData.jam_range_far_point_id, window._nbData.jam_range_near_point_id);
+      if (jamView) mapView = jamView;
+    }
+
     const map = new google.maps.Map(mapDiv, {
-      center: BRIDGE_COORDS[key],
-      zoom: 15,
+      center: mapView.center,
+      zoom: mapView.zoom,
       disableDefaultUI: true,
       zoomControl: true,
     });
