@@ -11,7 +11,7 @@ const T = {
     labelMxUSA: 'Mexico → USA', labelNorthbound: 'Northbound',
     labelUSAMx: 'USA → Mexico', labelSouthbound: 'Southbound (estimate)',
     feelsLike: 'Feels like', wind: 'Wind', open: 'Open', closed: 'Closed',
-    general: 'General', readyLane: 'Ready Lane', sentri: 'SENTRI',
+    general: 'General', readyLane: 'Ready Lane', sentri: 'SENTRI', pedestrian: 'Pedestrian',
     min: 'min', lanes: 'lanes open', closed2: 'Closed',
     fastestLabel: 'Fastest Bridge Right Now', fastestSub: 'Ready Lane',
     updated: 'Updated',
@@ -32,7 +32,7 @@ const T = {
     labelMxUSA: 'México → EE.UU.', labelNorthbound: 'Rumbo al norte',
     labelUSAMx: 'EE.UU. → México', labelSouthbound: 'Rumbo al sur (estimado)',
     feelsLike: 'Sensación', wind: 'Viento', open: 'Abierto', closed: 'Cerrado',
-    general: 'General', readyLane: 'Ready Lane', sentri: 'SENTRI',
+    general: 'General', readyLane: 'Ready Lane', sentri: 'SENTRI', pedestrian: 'Peatonal',
     min: 'min', lanes: 'carriles abiertos', closed2: 'Cerrado',
     fastestLabel: 'Puente más rápido ahora', fastestSub: 'Ready Lane',
     updated: 'Actualizado',
@@ -228,6 +228,12 @@ function renderBridges() {
     const general = laneDisplay(pv?.standard_lanes);
     const ready = laneDisplay(pv?.ready_lanes);
     const sentri = laneDisplay(pv?.NEXUS_SENTRI_lanes);
+    // pedestrian_lanes is a SIBLING of passenger_vehicle_lanes in the CBP
+    // feed, not nested under it — confirmed 2026-06-21 by reading the raw
+    // API response directly. Previously not rendered at all (no code read
+    // this field), even though CBP provides it for ports like Ysleta.
+    const ped = p.pedestrian_lanes;
+    const pedestrian = laneDisplay(ped?.standard_lanes);
     const construction = p.construction_notice?.trim();
     html += `<div class="bridge-card">
       <div class="bridge-header">
@@ -243,6 +249,9 @@ function renderBridges() {
         </div>
         <div class="lane-cell"><div class="lane-label">${t('sentri')}</div>
           ${sentri?`<div class="lane-time ${delayColor(sentri.delay)}">${sentri.delay}<span class="lane-unit"> ${t('min')}</span></div><div class="lane-lanes">${sentri.open} ${t('lanes')}</div>`:`<div class="lane-time time-na">${t('closed2')}</div>`}
+        </div>
+        <div class="lane-cell"><div class="lane-label">${t('pedestrian')}</div>
+          ${pedestrian?`<div class="lane-time ${delayColor(pedestrian.delay)}">${pedestrian.delay}<span class="lane-unit"> ${t('min')}</span></div><div class="lane-lanes">${pedestrian.open} ${t('lanes')}</div>`:`<div class="lane-time time-na">${t('closed2')}</div>`}
         </div>
       </div>
       ${construction?`<div class="construction-notice">⚠️ ${construction}</div>`:''}
